@@ -3,17 +3,17 @@
 function SCAN() { #Scans randomly and keeps only ports open with a time stamp
 
 IFS=$'\n'
-for ip in $(cat MixIP.list)													# Random ip address
+for ip in $(cat MixIP.list)									# Random ip address
 do
 N="$((1 + $RANDOM % 1000))"	
-P=$(cat MixPort.list | tail -n$N | head -n1 )											# Random port number
+P=$(cat MixPort.list | tail -n$N | head -n1 )							# Random port number
 
 echo "Scanning $ip:$P"
-sudo nmap $ip -T2 -p$P -Pn -sS > .random.log 2>/dev/null	 				# Scans only 1 at a time
+sudo nmap $ip -T2 -p$P -Pn -sS > .random.log 2>/dev/null					# Scans only 1 at a time
 
 if [[ -z $(cat .random.log | grep -i open) ]] ; then  						# In case an open port is found
 echo "a" | grep "b" 
-else 																		# Log the results
+else 												# Log the results
 echo "-----found open port in $ip:$P at $(date +%T)-----"
 echo "-----found open port in $ip:$P at $(date +%T)-----" >> scan.log
 cat .random.log >> scan.log
