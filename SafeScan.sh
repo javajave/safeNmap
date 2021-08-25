@@ -1,11 +1,15 @@
 #!/bin/bash
 
 function SCAN() { #Scans randomly and keeps only ports open with a time stamp
+
+IFS=$'\n'
 for ip in $(cat MixIP.list)													# Random ip address
 do
-P="$((1 + $RANDOM % 65535))"												# Random port number
+N="$((1 + $RANDOM % 1000))"	
+P=$(cat MixPort.list | tail -n$N | head -n1 )											# Random port number
+
 echo "Scanning $ip:$P"
-sudo nmap $ip -T2 -p"$P" -Pn -sS > .random.log 2>/dev/null	 				# Scans only 1 at a time
+sudo nmap $ip -T2 -p$P -Pn -sS > .random.log 2>/dev/null	 				# Scans only 1 at a time
 
 if [[ -z $(cat .random.log | grep -i open) ]] ; then  						# In case an open port is found
 echo "a" | grep "b" 
@@ -14,8 +18,8 @@ echo "-----found open port in $ip:$P at $(date +%T)-----"
 echo "-----found open port in $ip:$P at $(date +%T)-----" >> scan.log
 cat .random.log >> scan.log
 echo " " >> scan.log
-fi
-sleep 0.5 
+fi 
+
 done
 
 }
@@ -25,7 +29,13 @@ cd /home/$(whoami) 	#Note this is a point that could be a problem
 if [ ! -d Scans ]; then
 sudo mkdir Scans
 fi
-	cd Scans
+
+cd Scans
+sudo updatedb
+mv $(locate 1000_commen_port.txt) . 2>/dev/null
+PORTS=/home/kali/scripts/Scans/1000_commen_port.txt
+
+
 if [ ! -d $IP ]; then 
 sudo mkdir $IP
 fi
@@ -45,6 +55,7 @@ fi
 }
 		
 function SHUF() { ###Create a list of mixed ip addresses 
+
 shuf IP.list > MixIP.list 
 sudo rm -f IP.list
 
@@ -53,6 +64,17 @@ echo "a" | grep "b"
 else 
 echo "MixIP.list created"
 fi
+
+IFS=','; for port in $(cat $PORTS); do echo $port >> .1000_ports; done
+shuf .1000_ports > MixPort.list 
+sudo rm -f .1000_ports
+
+if [[ -z $(cat MixPort.list) ]] ; then 
+echo "a" | grep "b" 
+else 
+echo "MixPort.list created"
+fi
+
 SCAN
 }
 
@@ -113,8 +135,12 @@ function YOUR-ANONIMOUS() { #check if I am Anonimous
 			sleep 1.5
 			QUES    ##call the QUES function
 			else	
-			echo "YOUR computer is [*] NOT [*] Anonimous, Exit..."
-			exit
+			read -p "YOUR computer is [*] NOT [*] Anonimous, Would you like to continue? (y/n)" YesNo
+				if [ $YesNo = y ];then 
+				QUES
+				else
+				exit
+				fi
 			fi	
 		fi
 }
@@ -164,7 +190,7 @@ FindNipe
 else                    # if no send to recon apps function
 echo "OK.... Your choice..."
 
-WEB-LIST
+QUES
 
 fi
 }
